@@ -680,7 +680,7 @@ class FormBuilder
      */
     public function getSelectOption($display, $value, $selected, array $attributes = [])
     {
-        if (is_array($display)) {
+        if (is_array($display) && !$this->hasOptionAttributes($display)) {
             return $this->optionGroup($display, $value, $selected, $attributes);
         }
 
@@ -720,9 +720,16 @@ class FormBuilder
      */
     protected function option($display, $value, $selected, array $attributes = [])
     {
+
         $selected = $this->getSelectedValue($value, $selected);
 
-        $options = ['value' => $value, 'selected' => $selected] + $attributes;
+        $options = [];
+
+        if (is_array($display)) {
+            list($display, $options) = $display;
+        }
+
+        $options = $options + ['value' => $value, 'selected' => $selected] + $attributes;
 
         return $this->toHtmlString('<option' . $this->html->attributes($options) . '>' . e($display) . '</option>');
     }
@@ -1315,5 +1322,18 @@ class FormBuilder
         }
 
         throw new BadMethodCallException("Method {$method} does not exist.");
+    }
+
+    /**
+     * @param array $display
+     *
+     * @return bool
+     */
+    private function hasOptionAttributes(array $display)
+    {
+        return (
+            array_key_exists(1, $display) &&
+            is_array($display[1])
+        );
     }
 }
